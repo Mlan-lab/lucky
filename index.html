@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0910">
+<meta name="description" content="好运签 · 写下名姓，摇一支签，看看今天的时运。">
+<title>好运签 · 今日时运</title>
+<style>
+  :root{
+    --ink:#0a0910;
+    --panel:#14121a;
+    --gold:#d9b45a;
+    --gold-hi:#f4dfa0;
+    --gold-dim:#8d7237;
+    --cinnabar:#c2453b;
+    --text:#e8e2d4;
+    --text-dim:#9a9285;
+    --line:rgba(217,180,90,.28);
+    --accent:#d9b45a;
+    --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong","SimSun",serif;
+    --sans:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    min-height:100dvh;
+    overflow-x:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .bg::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(900px 600px at 50% -10%, rgba(194,69,59,.18), transparent 70%),
+      radial-gradient(700px 500px at 15% 105%, rgba(217,180,90,.10), transparent 70%),
+      radial-gradient(600px 500px at 95% 30%, rgba(90,70,160,.10), transparent 70%);
+  }
+  .bg::after{
+    content:"";position:absolute;inset:-20%;
+    background-image:radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size:3px 3px;
+    opacity:.5;
+    animation:drift 60s linear infinite;
+  }
+  @keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-3px,-3px,0)}}
+  .halo{
+    position:absolute;left:50%;top:18%;width:420px;height:420px;transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(217,180,90,.13), transparent 62%);
+    filter:blur(20px);
+    animation:breathe 7s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+
+  .topbar{
+    position:relative;z-index:5;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 18px 6px;
+    max-width:520px;margin:0 auto;
+  }
+  .brand{
+    font-family:var(--serif);font-size:17px;letter-spacing:.28em;
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold-dim));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-weight:600;
+  }
+  .tools{display:flex;gap:8px}
+  .tool{
+    border:1px solid var(--line);background:rgba(255,255,255,.02);
+    color:var(--text-dim);font-size:12px;letter-spacing:.08em;
+    padding:7px 11px;border-radius:999px;cursor:pointer;
+    font-family:var(--sans);transition:.25s;display:flex;align-items:center;gap:5px;
+  }
+  .tool:hover{color:var(--gold-hi);border-color:rgba(217,180,90,.5)}
+  .tool svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6}
+  .tool.muted{opacity:.42}
+
+  .stage{position:relative;z-index:5;max-width:520px;margin:0 auto;padding:0 22px 40px}
+  .hidden{display:none!important}
+
+  /* ===== 起签区 ===== */
+  .gate-head{text-align:center;margin:14px 0 22px}
+  .gate-title{
+    font-family:var(--serif);font-size:42px;line-height:1.15;letter-spacing:.16em;
+    margin:0 0 8px;
+    background:linear-gradient(180deg,#fff6dd 0%,var(--gold-hi) 38%,var(--gold-dim) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 4px 18px rgba(217,180,90,.22));
+  }
+  .gate-sub{font-size:12.5px;color:var(--text-dim);letter-spacing:.22em;margin:0}
+
+  .form{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+  .field{position:relative}
+  .field label{
+    position:absolute;left:14px;top:9px;font-size:10px;letter-spacing:.2em;
+    color:var(--gold-dim);pointer-events:none;
+  }
+  .field input{
+    width:100%;padding:24px 14px 9px;
+    background:rgba(255,255,255,.025);
+    border:1px solid var(--line);border-radius:12px;
+    color:var(--text);font-size:15px;font-family:var(--sans);
+    outline:none;transition:.25s;
+    color-scheme:dark;
+  }
+  .field input:focus{
+    border-color:rgba(217,180,90,.65);
+    background:rgba(217,180,90,.05);
+    box-shadow:0 0 0 3px rgba(217,180,90,.07);
+  }
+  .field input::placeholder{color:#4d473d}
+
+  .chips-label{font-size:11px;color:var(--text-dim);letter-spacing:.22em;margin:2px 0 8px}
+  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:22px}
+  .chip{
+    border:1px solid var(--line);background:rgba(255,255,255,.02);
+    color:var(--text-dim);font-size:12.5px;
+    padding:8px 4px;border-radius:999px;cursor:pointer;
+    font-family:var(--serif);letter-spacing:.1em;
+    transition:.25s;
+  }
+  .chip:hover{color:var(--text);border-color:rgba(217,180,90,.45)}
+  .chip.on{
+    color:#120e08;
+    background:linear-gradient(180deg,var(--gold-hi),var(--accent));
+    border-color:transparent;
+    font-weight:600;
+    box-shadow:0 3px 14px rgba(217,180,90,.28);
+  }
+
+  /* 签筒 */
+  .tube-wrap{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:6px}
+  .tube-btn{
+    position:relative;background:none;border:none;padding:0;cursor:pointer;
+    width:190px;height:auto;touch-action:none;outline:none;
+    filter:drop-shadow(0 18px 30px rgba(0,0,0,.55));
+  }
+  .tube-btn:focus-visible{outline:1px dashed rgba(217,180,90,.6);outline-offset:6px;border-radius:20px}
+  .tube{display:block;width:100%;height:auto;transform-origin:50% 88%;transition:filter .3s}
+  .tube-wrap.shaking .tube{animation:tubeShake .42s linear infinite}
+  .tube-wrap.shaking .sticks{animation:sticksBob .28s ease-in-out infinite}
+  .tube-wrap.ready .tube{filter:drop-shadow(0 0 26px rgba(217,180,90,.55)) drop-shadow(0 18px 30px rgba(0,0,0,.55))}
+  @keyframes tubeShake{
+    0%,100%{transform:translate(0,0) rotate(0)}
+    15%{transform:translate(-4px,-2px) rotate(-2.6deg)}
+    30%{transform:translate(5px,1px) rotate(2.1deg)}
+    45%{transform:translate(-5px,2px) rotate(-3.1deg)}
+    60%{transform:translate(4px,-1px) rotate(2.4deg)}
+    75%{transform:translate(-3px,1px) rotate(-1.7deg)}
+  }
+  @keyframes sticksBob{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-5px)}
+  }
+  .tube-hint{
+    margin-top:14px;font-size:12.5px;letter-spacing:.2em;color:var(--text-dim);
+    font-family:var(--serif);transition:.25s;min-height:18px;
+  }
+  .tube-hint.warn{color:#e08a80}
+  .progress-track{
+    margin-top:12px;width:130px;height:2px;background:rgba(255,255,255,.08);
+    border-radius:2px;overflow:hidden;opacity:0;transition:opacity .25s;
+  }
+  .progress-track.on{opacity:1}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold-dim),var(--gold-hi));transition:width 1.05s linear}
+  .progress-fill.run{width:100%}
+
+  /* ===== 签卡 ===== */
+  .result-wrap{perspective:1200px;padding-top:6px}
+  @keyframes flipIn{
+    0%{opacity:0;transform:rotateY(78deg) scale(.92)}
+    60%{opacity:1}
+    100%{opacity:1;transform:rotateY(0) scale(1)}
+  }
+  .card{
+    position:relative;
+    background:linear-gradient(180deg,#17141d 0%,#121016 55%,#0e0c12 100%);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:26px 22px 22px;
+    box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04);
+    animation:flipIn .85s cubic-bezier(.2,.9,.25,1) both;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,transparent,var(--accent),transparent);
+    opacity:.8;
+  }
+  .card::after{
+    content:"";position:absolute;inset:8px;border:1px solid rgba(217,180,90,.09);
+    border-radius:14px;pointer-events:none;
+  }
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px}
+  .who{font-size:11px;letter-spacing:.18em;color:var(--text-dim);line-height:1.75}
+  .who b{color:var(--gold-hi);font-weight:500;letter-spacing:.1em}
+  .seal{
+    flex:none;width:62px;height:62px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    background:linear-gradient(160deg,rgba(194,69,59,.92),rgba(143,49,41,.96));
+    box-shadow:0 6px 18px rgba(194,69,59,.3), inset 0 0 0 1.5px rgba(255,220,190,.35);
+    transform:rotate(-4deg);
+  }
+  .seal span{font-family:var(--serif);color:#ffeede;line-height:1}
+  .seal .lv{font-size:19px;letter-spacing:.06em;font-weight:600}
+  .seal .tag{font-size:8px;letter-spacing:.24em;opacity:.75;margin-top:4px}
+  .type-row{display:flex;align-items:center;gap:8px;margin:10px 0 20px}
+  .type-row .line{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .type-name{font-family:var(--serif);font-size:12px;letter-spacing:.32em;color:var(--accent)}
+
+  .poem{margin:0 0 6px;padding:0;list-style:none;text-align:center}
+  .poem li{
+    font-family:var(--serif);font-size:19px;line-height:2.05;
+    letter-spacing:.14em;color:#f0e8d6;
+    text-shadow:0 2px 18px rgba(217,180,90,.14);
+  }
+  .tone-line{
+    text-align:center;font-size:11.5px;color:var(--gold-dim);
+    letter-spacing:.16em;margin:10px 0 0;font-family:var(--serif);
+  }
+  .divider{
+    height:1px;margin:22px 0;background:linear-gradient(90deg,transparent,rgba(217,180,90,.35),transparent);
+    position:relative;
+  }
+  .divider::after{
+    content:"◆";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:7px;color:var(--gold-dim);background:#121016;padding:0 8px;
+  }
+  .reading{font-size:14.5px;line-height:1.95;color:#cdc5b6;text-align:justify;letter-spacing:.03em}
+  .reading::first-letter{font-size:20px;color:var(--gold-hi);font-family:var(--serif)}
+
+  .trio{display:flex;flex-direction:column;gap:1px;margin-top:22px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.05)}
+  .tri{display:flex;gap:12px;padding:13px 14px;background:#131018}
+  .tri-tag{
+    flex:none;width:26px;height:26px;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--serif);font-size:14px;font-weight:600;
+    margin-top:1px;
+  }
+  .tri.yi .tri-tag{background:rgba(120,160,110,.16);color:#9fce93;box-shadow:inset 0 0 0 1px rgba(120,160,110,.28)}
+  .tri.ji .tri-tag{background:rgba(194,69,59,.16);color:#e08a80;box-shadow:inset 0 0 0 1px rgba(194,69,59,.3)}
+  .tri.fang .tri-tag{background:rgba(217,180,90,.14);color:var(--gold);box-shadow:inset 0 0 0 1px rgba(217,180,90,.28)}
+  .tri ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+  .tri li{font-size:13px;line-height:1.6;color:#c3bbae}
+  .tri li::before{content:"·";color:var(--gold-dim);margin-right:7px}
+
+  .lucky{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px}
+  .lk{padding:11px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(217,180,90,.12)}
+  .lk .k{font-size:10px;letter-spacing:.2em;color:var(--gold-dim);display:block;margin-bottom:3px}
+  .lk .v{font-family:var(--serif);font-size:13.5px;color:#e4dccb;letter-spacing:.05em}
+
+  .bless{
+    margin:24px 0 0;text-align:center;font-family:var(--serif);
+    font-size:14.5px;line-height:1.9;color:var(--gold-hi);letter-spacing:.08em;
+  }
+  .bless::before,.bless::after{content:"「";color:var(--gold-dim);font-size:12px}
+  .bless::after{content:"」"}
+
+  .heal-box{
+    margin-top:18px;padding:16px;border-radius:12px;
+    background:linear-gradient(160deg,rgba(194,69,59,.14),rgba(194,69,59,.04));
+    border:1px solid rgba(194,69,59,.28);
+    animation:fadeUp .5s both;
+  }
+  .heal-box .h{font-size:11px;letter-spacing:.22em;color:#e08a80;margin-bottom:8px}
+  .heal-box .t{font-size:13.5px;line-height:1.8;color:#d8cec0}
+  .heal-done{display:inline-block;margin-top:10px;font-family:var(--serif);font-size:12px;letter-spacing:.2em;color:#9fce93}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .actions{display:flex;gap:10px;margin-top:22px}
+  .btn{
+    flex:1;padding:13px;border-radius:11px;cursor:pointer;font-family:var(--serif);
+    font-size:13.5px;letter-spacing:.14em;transition:.25s;border:1px solid var(--line);
+    background:transparent;color:var(--text-dim);
+  }
+  .btn:hover{color:var(--text);border-color:rgba(217,180,90,.5)}
+  .btn.primary{
+    background:linear-gradient(180deg,var(--gold-hi),var(--accent));
+    color:#14100a;border-color:transparent;font-weight:600;
+    box-shadow:0 8px 24px rgba(217,180,90,.2);
+  }
+  .btn.primary:hover{filter:brightness(1.06);color:#14100a}
+  .btn.ghost-red{color:#e08a80;border-color:rgba(194,69,59,.35)}
+  .btn.ghost-red:hover{border-color:rgba(194,69,59,.7);color:#ff9d92}
+
+  .spark{
+    position:fixed;width:5px;height:5px;border-radius:50%;pointer-events:none;z-index:60;
+    background:var(--gold-hi);
+    animation:sparkFly 1.15s cubic-bezier(.15,.7,.3,1) forwards;
+  }
+  @keyframes sparkFly{
+    0%{transform:translate(0,0) scale(1);opacity:1}
+    100%{transform:translate(var(--tx),var(--ty)) scale(.2);opacity:0}
+  }
+  .flash{
+    position:fixed;inset:0;z-index:55;pointer-events:none;
+    background:radial-gradient(circle at 50% 62%, rgba(255,240,200,.55), transparent 55%);
+    animation:flashOut .5s ease-out forwards;
+  }
+  @keyframes flashOut{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+
+  .modal{
+    position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;
+    background:rgba(5,4,8,.72);backdrop-filter:blur(6px);
+    animation:fade .25s both;
+  }
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet{
+    width:100%;max-width:520px;background:linear-gradient(180deg,#17141d,#0d0b12);
+    border:1px solid var(--line);border-bottom:none;
+    border-radius:20px 20px 0 0;padding:22px 22px calc(26px + env(safe-area-inset-bottom));
+    animation:sheetUp .35s cubic-bezier(.2,.9,.25,1) both;
+    max-height:82vh;overflow-y:auto;
+  }
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .sheet-title{font-family:var(--serif);font-size:18px;letter-spacing:.2em;color:var(--gold-hi)}
+  .close{background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;line-height:1;padding:4px 6px}
+  .close:hover{color:var(--text)}
+  .stats{display:flex;gap:26px;margin:16px 0 20px}
+  .stat .n{font-family:var(--serif);font-size:26px;color:var(--gold-hi);line-height:1}
+  .stat .l{font-size:10px;letter-spacing:.2em;color:var(--text-dim);margin-top:6px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal .dw{text-align:center;font-size:10px;color:#5f584e;padding-bottom:4px}
+  .day{
+    aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;
+    background:rgba(255,255,255,.022);border:1px solid transparent;
+    font-size:11px;color:#6b6459;
+  }
+  .day .dot{width:4px;height:4px;border-radius:50%;background:transparent}
+  .day.today{border-color:rgba(217,180,90,.4);color:var(--gold-hi)}
+  .day.has .dot{box-shadow:0 0 6px currentColor}
+  .day.l-great{background:rgba(244,223,160,.13);color:#f4dfa0}
+  .day.l-great .dot{background:#f4dfa0}
+  .day.l-good{background:rgba(217,180,90,.09);color:#d9b45a}
+  .day.l-good .dot{background:#d9b45a}
+  .day.l-mid{background:rgba(160,170,190,.07);color:#a8b0c0}
+  .day.l-mid .dot{background:#a8b0c0}
+  .day.l-flat{background:rgba(140,130,120,.06);color:#8f8880}
+  .day.l-flat .dot{background:#8f8880}
+  .day.l-bad{background:rgba(194,69,59,.12);color:#d98276}
+  .day.l-bad .dot{background:#d98276}
+  .day.l-healed{background:rgba(120,160,110,.1);color:#9fce93}
+  .day.l-healed .dot{background:#9fce93}
+  .cal-note{font-size:11px;color:#5f584e;margin-top:16px;line-height:1.7}
+  .empty{text-align:center;padding:26px 0;color:#5f584e;font-size:13px;line-height:1.9}
+
+  .toast{
+    position:fixed;left:50%;bottom:34px;transform:translate(-50%,12px);
+    background:rgba(28,24,20,.96);border:1px solid var(--line);
+    color:var(--gold-hi);font-size:12.5px;letter-spacing:.1em;
+    padding:10px 18px;border-radius:999px;z-index:90;
+    opacity:0;pointer-events:none;transition:.3s;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  .footnote{text-align:center;font-size:10.5px;color:#463f36;letter-spacing:.18em;margin-top:26px;line-height:1.9}
+
+  @media (max-width:380px){
+    .gate-title{font-size:34px}
+    .poem li{font-size:17px;letter-spacing:.1em}
+    .tube-btn{width:160px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  }
+</style>
+</head>
+<body>
+<div class="bg"><div class="halo"></div></div>
+
+<header class="topbar">
+  <div class="brand">好运签</div>
+  <div class="tools">
+    <button class="tool" id="btnCal" type="button">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      运势日历
+    </button>
+    <button class="tool" id="btnSound" type="button" aria-label="音效开关">
+      <svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+      音效
+    </button>
+  </div>
+</header>
+
+<main class="stage">
+  <section id="screenGate">
+    <div class="gate-head">
+      <h1 class="gate-title">今日时运</h1>
+      <p class="gate-sub">写下名姓 · 择一签筒 · 摇一支签</p>
+    </div>
+
+    <div class="form">
+      <div class="field">
+        <label for="nameInput">名 姓</label>
+        <input id="nameInput" type="text" maxlength="12" autocomplete="off" placeholder="请输入你的名字" />
+      </div>
+      <div class="field">
+        <label for="dateInput">日 期</label>
+        <input id="dateInput" type="date" />
+      </div>
+    </div>
+
+    <div class="chips-label">选 一 支 签 筒</div>
+    <div class="chips" id="chips"></div>
+
+    <div class="tube-wrap" id="tubeWrap">
+      <button class="tube-btn" id="tubeBtn" type="button" aria-label="按住签筒摇一摇">
+        <svg class="tube" id="tubeSvg" viewBox="0 0 240 372" aria-hidden="true">
+          <defs>
+            <linearGradient id="bodyG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#241b12"/>
+              <stop offset=".16" stop-color="#4a3722"/>
+              <stop offset=".46" stop-color="#6d5029"/>
+              <stop offset=".62" stop-color="#5b4423"/>
+              <stop offset=".84" stop-color="#3a2b1a"/>
+              <stop offset="1" stop-color="#1e1610"/>
+            </linearGradient>
+            <linearGradient id="goldG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f4dfa0"/>
+              <stop offset=".5" stop-color="#c9a24a"/>
+              <stop offset="1" stop-color="#8d7237"/>
+            </linearGradient>
+          </defs>
+          <g class="sticks">
+            <rect x="102" y="26" width="11" height="80" rx="4" fill="#e9ddc2" stroke="#b8a479" stroke-width="1" transform="rotate(-9 107 100)"/>
+            <rect x="116" y="14" width="11" height="92" rx="4" fill="#f2e8d0" stroke="#c2b08a" stroke-width="1" transform="rotate(-2 121 100)"/>
+            <rect x="130" y="22" width="11" height="84" rx="4" fill="#e3d6b8" stroke="#b8a479" stroke-width="1" transform="rotate(6 135 100)"/>
+            <rect x="90" y="38" width="10" height="70" rx="4" fill="#dccfae" stroke="#b8a479" stroke-width="1" transform="rotate(-16 95 102)"/>
+            <rect x="145" y="40" width="10" height="68" rx="4" fill="#dccfae" stroke="#b8a479" stroke-width="1" transform="rotate(14 150 102)"/>
+          </g>
+          <ellipse cx="120" cy="104" rx="60" ry="13" fill="#150f0b" stroke="url(#goldG)" stroke-width="1.6"/>
+          <rect x="60" y="104" width="120" height="212" rx="22" fill="url(#bodyG)" stroke="url(#goldG)" stroke-width="2"/>
+          <g stroke="rgba(0,0,0,.35)" stroke-width="1.2">
+            <path d="M84 110v200M108 108v208M132 108v208M156 110v200"/>
+          </g>
+          <g stroke="rgba(255,225,180,.10)" stroke-width="1">
+            <path d="M86 110v200M110 108v208M134 108v208M158 110v200"/>
+          </g>
+          <rect x="60" y="150" width="120" height="36" fill="#d9b45a" id="sealBand" opacity=".9"/>
+          <rect x="60" y="150" width="120" height="36" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1"/>
+          <text x="120" y="175" text-anchor="middle" font-size="21" font-family="Noto Serif SC, SimSun, serif" font-weight="600" fill="#1a1408" id="sealChar">综</text>
+          <rect x="60" y="272" width="120" height="44" rx="12" fill="url(#goldG)" opacity=".92"/>
+          <rect x="60" y="272" width="120" height="44" rx="12" fill="none" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+          <g opacity=".35" stroke="#3a2b1a" stroke-width="1.2">
+            <path d="M96 288v16M120 284v22M144 288v16"/>
+          </g>
+        </svg>
+      </button>
+      <div class="tube-hint" id="hint">按住签筒，摇一摇</div>
+      <div class="progress-track" id="progTrack"><div class="progress-fill" id="progFill"></div></div>
+    </div>
+
+    <p class="footnote">同名同日 · 同签同卦</p>
+  </section>
+
+  <section id="screenResult" class="hidden">
+    <div class="result-wrap" id="resultWrap"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   好运签 · 单文件实现
+   确定性抽签：hash(姓名 + 日期 + 签种) 作为唯一种子
+   ========================================================= */
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function xmur3(str){
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function(){
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= h >>> 16) >>> 0;
+  };
+}
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function rngFor(str){ return mulberry32(xmur3(str)()); }
+function pick(arr, rnd){ return arr[Math.floor(rnd() * arr.length)]; }
+function pickN(arr, n, rnd){
+  const copy = arr.slice(), out = [];
+  for (let i = 0; i < n && copy.length; i++){
+    out.push(copy.splice(Math.floor(rnd() * copy.length), 1)[0]);
+  }
+  return out;
+}
+
+/* ---------- 通用文案池 ---------- */
+const YI_ALL = [
+  '把搁置很久的消息回掉','给很久没联系的人发个表情包','出门绕一条没走过的路',
+  '把桌面上堆着的东西清掉','早点睡，把手机放到够不着的地方','认真吃一顿饭，不看屏幕',
+  '想买的东西先放购物车一天','夸一个人，具体地夸','说一句「这个我来」',
+  '把拖了三天的衣服洗了','出门晒太阳十分钟','把手机调成静音一小时',
+  '把一件小事做完，而不是想周全','买一杯平时舍不得的饮料','给房间换个亮一点的灯泡',
+  '拒绝一件你不想做的事','把旧密码改一改','把相册里没用的截图删一批',
+  '走路的时候抬头看看天','把欠着的道歉说出口'
+];
+const JI_ALL = [
+  '在群里发六十秒语音','深夜点开前任的朋友圈','空腹喝冰美式',
+  '跟说「我只说一句」的人对话','在饭桌上聊工作','半夜下单任何东西',
+  '用「随便」回答别人的选择','在电梯里评价同事','把手机带上床',
+  '一边吃饭一边刷短视频','在气头上发消息','跟朋友借钱，或借给朋友钱',
+  '在周末早上安排会议','一次买三个月的健身卡','用很长的文字吵架',
+  '睡前看房价','把「我不行」挂在嘴边','一边走路一边回工作消息',
+  '饿的时候逛超市','对刚认识的人掏心掏肺'
+];
+const FANG_ALL = [
+  '那个突然对你特别热情的同事','奶茶第二杯半价','自称「过来人」的建议',
+  '拍胸口说「包在我身上」的人','所有免费的东西','半夜的情绪',
+  '来得太突然的夸奖','「就这一次」的承诺','看起来很划算的套餐',
+  '群里突然的 @所有人','好久不联系却突然寒暄的人','一本正经的养生谣言',
+  '打折标签上那个被划掉的原价','过于稳定的情绪','开口就说「我不是针对谁」的人',
+  '今天特别顺的时候','突然变安静的群'
+];
+const LUCKY_ITEMS = ['一枚旧硬币','一片银杏叶','一小块方糖','一支旧钢笔','一颗薄荷糖','一本没读完的书','一只搪瓷杯','一条旧围巾','一张过期的电影票','一颗陈皮糖','一株绿萝','一个玻璃弹珠','一张写着字的便利贴','一枚回形针'];
+const LUCKY_COLORS = ['朱砂红','月白','竹青','琥珀','藏蓝','藕粉','松烟墨','赭石','鹅黄','青瓷'];
+const LUCKY_NUMBERS = ['3','7','8','9','12','17','21','26','33','42','66','88'];
+const DIRECTIONS = ['东南方向的窗边','正南那家店','朝东的地铁口','公司楼下便利店','靠窗的位置','西北的旧街','东北的楼梯口','正北的茶水间'];
+const BLESSINGS = [
+  '愿你今天所有的小麻烦，都只是路过。',
+  '好运这种东西，常常藏在你没注意的地方。',
+  '愿你出门有风，回家有灯。',
+  '今天的签不管好坏，日子还是你的。',
+  '愿你被生活温柔以待，至少今天。',
+  '顺顺利利，平平安安，剩下的交给明天。',
+  '愿你今日所求，皆有回音。',
+  '别急，好事都还在路上。'
+];
+const HEAL = [
+  '今晚十一点前睡，明天这事就过去了。',
+  '找个理由推掉一个不想去的局，你会轻松很多。',
+  '把这件烦心事写在纸上，写完撕掉。',
+  '出门走二十分钟，别戴耳机。',
+  '给一个信任的人打个电话，只说「我今天有点累」。',
+  '今天不做任何重大决定，明天再说。',
+  '吃点热的，别吃凉的。',
+  '把手机放远一点，早点洗澡。'
+];
+
+/* ---------- 时段语气 ---------- */
+const TONE = {
+  dawn: ['清晨的签，最灵在一日之始','这会儿抽的签，说的多半是今天上午'],
+  day:  ['日头正盛，签也说得直白些','午后的签，讲的是接下来半天'],
+  eve:  ['天色将晚，签里带着一点归意','傍晚抽签，人最容易心软'],
+  night:['夜深了，签也压低声音说话','这个时候的签，多半是说给自己听的']
+};
+function toneBucket(){
+  const h = new Date().getHours();
+  if (h >= 5 && h < 9) return 'dawn';
+  if (h >= 9 && h < 17) return 'day';
+  if (h >= 17 && h < 22) return 'eve';
+  return 'night';
+}
+
+/* ---------- 签种 ---------- */
+const TYPES = {
+  general: {
+    name:'综合', seal:'综', accent:'#d9b45a',
+    poems: [
+      ['云开雾散日初长','莫问前程问己心','一步一回皆是路','何须远望羡他人'],
+      ['半窗明月一杯茶','闲坐无事也是佳','忽有故人来叩门','带来三分意外花'],
+      ['风过竹梢声自清','行到水穷且看云','此身未老心先静','万事随缘不须争'],
+      ['昨夜微雨洗尘襟','今朝推门天地新','莫嫌小事常牵绊','小事尽头是真心'],
+      ['舟行浅水莫慌忙','自有潮来送一程','岸边人多休问路','抬头星子正分明'],
+      ['旧事如尘轻拂去','新茶一盏试初温','今日不谈千里远','先把窗前扫一遍']
+    ],
+    readings: [
+      '今天会遇到一个很小但很治愈的瞬间，可能是一杯刚好温热的咖啡，也可能是电梯里有人帮你按住门。',
+      '某件拖了很久的小事，今天会意外地顺手解决。别惊讶，那是你之前埋下的伏笔。',
+      '会有一个人突然想起你，也许只是发个表情包，但那一刻你会觉得这世界还记着你。',
+      '今天适合走一条平时不走的路，绕一点远，会遇到一个让你心情变好的小东西。',
+      '你会在一件并不重要的事上被夸一句，别谦虚过头，坦然地收下就好。',
+      '今天脑子会比平时清楚，适合把一件纠结很久的事做个了断。'
+    ],
+    yi: ['把一件拖了很久的小事收尾','和喜欢的人多聊两句','把预算重新列一遍'],
+    ji: ['把今天的事推到明天','在三句话内下结论','反复刷新同一个页面'],
+    fang: ['一件看起来很小的麻烦','你自己的那句「再等一会」','路上所有的巧合']
+  },
+  love: {
+    name:'姻缘', seal:'姻', accent:'#c8553d',
+    poems: [
+      ['月老红线暗中牵','不在天涯在眼前','你若回头看一眼','那人已在灯下等'],
+      ['一纸姻缘未可催','来早来迟各有时','莫向春风问消息','春风自己也未知'],
+      ['双星隔着一条河','年年此夜渡鹊桥','若问良人何日至','先问自己肯不肯'],
+      ['红线缠在旧书页','翻到时人自会来','莫将心事都藏起','藏久了便长成苔'],
+      ['灯下缝衣线脚长','一针一线是寻常','姻缘不在惊心动','在于灯灭仍同床'],
+      ['缘字写来半边丝','另一半在他人手','你能做的是把自己','织成值得的好布匹']
+    ],
+    readings: [
+      '你和某个人的距离，今天会因为一件小事被拉近一点点，也许只是共同吐槽了一件事。',
+      '有句一直没说出口的话，今天的气氛其实很适合说，不必等到想好完美的措辞。',
+      '另一半今天可能有点小情绪，不是针对你，只是累了。别急着讲道理。',
+      '会收到一条意料之外的消息，来自一个你以为已经走远的人。',
+      '今天适合把关系里的一件小事说清楚，说得慢一点，别用「随便你」。',
+      '有人在默默留意你很久了，今天会有一个试探性的靠近。留意那些先开口的人。'
+    ],
+    yi: ['主动发一条「今天怎么样」','把一件小事说清楚，而不是憋着','一起做顿饭','说一句「我想你了」，不必铺垫'],
+    ji: ['用冷战解决问题','翻旧账','在深夜讨论「我们到底是什么关系」'],
+    fang: ['那个说「我和她只是朋友」的人','关键时刻的沉默','把陪伴当成理所当然的自己']
+  },
+  peach: {
+    name:'桃花', seal:'桃', accent:'#e8a5b8',
+    poems: [
+      ['桃之夭夭开满枝','风来便落两三片','莫捡落花当宝贝','抬头还有新花开'],
+      ['一笑偶逢陌上人','心头无故起微尘','此花好看三日好','三日之后问真心'],
+      ['春水初生春林盛','十里桃花不如你','莫把称赞当承诺','听时欢喜别当真'],
+      ['花事年年开又谢','心事年年谢又开','今岁若逢心动处','试问花期能几载'],
+      ['酒暖灯红人语喧','谁的目光在你脸','散场之后仍记得','那人才是动了念'],
+      ['桃花落在掌心里','握紧了会烂成泥','摊开手让它飞走','明年枝头还有你']
+    ],
+    readings: [
+      '今天你的状态会格外好，会有人多看你两眼。享受它，但别急着赋予意义。',
+      '会有人主动找你搭话，聊得还不错。先别急着在脑子里演完一整部剧。',
+      '社交平台上可能会收到一个有点暧昧的点赞，笑一笑，不用反复琢磨。',
+      '今天容易被「氛围感」骗。灯光好看、音乐好听，不代表人合适，记得看看白天的样子。',
+      '会有一个短暂的、让你心跳漏半拍的瞬间。记住它，但别拿它当承诺。',
+      '旧的心动今天可能会回来敲门，你可以开门看看，但别把门锁换回去。'
+    ],
+    yi: ['换一件让你自己觉得好看的衣服','出门走走，别宅着','加个好友，聊两句','拍张照，然后发出去'],
+    ji: ['把礼貌当心动','给刚认识的人发长语音','在酒精作用下表白'],
+    fang: ['只在你好看的时候出现的人','酒后的甜言蜜语','你自己脑补的续集']
+  },
+  career: {
+    name:'事业', seal:'业', accent:'#7fa7a3',
+    poems: [
+      ['千仞峰头一径斜','行到半山莫叹嗟','回头看看来时路','已有云海在脚下'],
+      ['磨刀不误砍柴功','今日磨刀明日锋','莫嫌眼前无进展','进展总在无声中'],
+      ['一叶扁舟逆水行','篙声欸乃不肯停','莫问何时到岸口','肯撑的人自先赢'],
+      ['大鹏一日同风起','扶摇直上九万里','风未起时先收翅','风起之时莫迟疑'],
+      ['案上文书堆似山','一件一件慢慢搬','今日只消做完一件','也算江湖走一关'],
+      ['有人登高有人跌','跌处往往藏台阶','莫怨手上的活太多','多出来的都是能耐']
+    ],
+    readings: [
+      '今天会有一件之前没做好的事被重新提起。别慌，这次你手里有底牌了。',
+      '会上或被安排一件不算你分内的事，接下来会有用，别急着推。',
+      '某个一直不表态的人今天会给你一个明确的信号，注意听他的语气。',
+      '今天适合把想法说出来，哪怕不成熟。先说出去，才有被完善的机会。',
+      '有一笔小的、意料之外的回馈会落到你身上。不大，但说明方向对了。',
+      '搭档会犯一个你早就提醒过的错。别用「我早说过」，那只会埋雷。'
+    ],
+    yi: ['主动汇报进度','把手上的活拆成三步','找一个人请教','把想法写下来，发出去'],
+    ji: ['在群里公开批评人','抢着接不属于你的活','把「我早说过」说出口'],
+    fang: ['会上不说话的同事','突然变简单的任务','口头答应却不肯落字的人']
+  },
+  study: {
+    name:'学业', seal:'学', accent:'#a8c0d8',
+    poems: [
+      ['窗前灯火到三更','墨迹未干天已明','今日多读一页书','明日多走一里路'],
+      ['书翻百遍意自明','题做千道手自灵','莫羡他人天生会','人家夜里也没停'],
+      ['一页未懂莫跳页','一步未稳莫登高','根基打在水底下','风来时节不动摇'],
+      ['昨夜背书今朝忘','忘了再读不算迟','记性如同旧抽屉','多拉几回自然顺'],
+      ['考题如山压眉头','先把会做的拿走','剩下难题慢慢啃','分数从来不嫌少'],
+      ['榜上无名莫低头','榜下有名也别飘','此去还有千张卷','写完才算真本事']
+    ],
+    readings: [
+      '今天看书的效率会比平时高，尤其是上午。抓住那两个小时。',
+      '会有一道卡了很久的题突然通了，通的那一刻你会想笑。',
+      '会有人问你一个你其实也不太懂的问题。硬着头皮答完，你会发现自己其实懂。',
+      '今天不适合硬啃最难的。先做会做的，把状态跑起来，再回头啃。',
+      '会看到一个让你焦虑的进度对比。关掉它，你看到的是别人的高光时刻。',
+      '今天背的东西记得牢，趁现在把最难记的那几条攻下来。'
+    ],
+    yi: ['先做会做的题','换一个学习环境','把知识点讲给别人听','给自己定一个二十五分钟的闹钟'],
+    ji: ['一边学习一边回消息','靠熬夜补白天的懒','抄一份自己都看不懂的笔记'],
+    fang: ['「这次考试很简单」的传言','学习群里晒进度的人','你自己安排的「稍微休息一下」']
+  },
+  wealth: {
+    name:'财运', seal:'财', accent:'#d9a441',
+    poems: [
+      ['铜钱落地响一声','正面反面都是钱','莫因小利失大义','莫因大义忘小钱'],
+      ['财如流水不停留','来得快去得也快','今日若能存一文','明日便有一文在'],
+      ['有人掘井得黄金','有人掘井得清泉','黄金能买半生安','清泉能养活一世'],
+      ['莫向财神求暴富','暴富多是别人的','稳当赚的每一块','晚上睡得踏实些'],
+      ['钱包瘪了别心慌','月底总是难熬的','今日少吃一顿外卖','明日多点一份底气'],
+      ['生意场上人情薄','账本记得清清楚楚','借钱容易还钱难','提防笑脸背后的账']
+    ],
+    readings: [
+      '今天会有一笔小钱花得让你觉得值。别事后自责，那叫买到开心。',
+      '会有人向你推荐一个「稳赚」的路子。保持微笑，保持距离。',
+      '一笔你以为收不回来的钱，今天可能会有动静。',
+      '今天适合算一算账。不一定能变富，但能让你心里有底。',
+      '会有一件想买很久的东西降价。问自己一句：没有它，我过得好不好。',
+      '有人在饭局上抢着买单。今天不必争，但记得下次你来。'
+    ],
+    yi: ['记一笔账','把信用卡账单看一眼','把没用的订阅取消','存下今天的一点钱'],
+    ji: ['相信「内部消息」','为了凑单多买两样','在直播间里做决定'],
+    fang: ['熟人的「稳赚」项目','限时抢购的倒计时','你自己说的「就当投资自己」']
+  },
+  social: {
+    name:'人际', seal:'交', accent:'#6c8cc7',
+    poems: [
+      ['人海相逢皆偶然','能坐下来便是缘','莫因一句无心话','断了三年有情线'],
+      ['酒桌上称兄道弟','散场后各回各家','真朋友不在酒里','在你落难那一句'],
+      ['有人当面称你哥','背后翻你旧账本','今日说话留三分','三分留给以后的自己'],
+      ['一句话能暖人心','一句话能寒人骨','今日开口先想想','想清楚了再说'],
+      ['独木不成林一片','孤掌难鸣一声','今日不妨主动些','先递出去一只手'],
+      ['交情不必太用力','用力过猛会断','来往如茶续水','淡一点才长久']
+    ],
+    readings: [
+      '今天会有一场你不太想去的聚会。去了，可能就是今晚最有意思的部分。',
+      '一个人今天会说一句无心的话，刺你一下。先别回，隔天再看，也许就不是事。',
+      '会有一个久没联系的人突然找你。别先猜目的，先聊两句。',
+      '今天适合还一个人情，小到一杯奶茶，关系的齿轮会因此转一下。',
+      '会有一次让你不太舒服的比较，是你和另一个人的。记住，你只跟昨天的自己比。',
+      '今天在群里说一句真话，会有人默默记住你。'
+    ],
+    yi: ['主动打个招呼','给一个人具体的感谢','在群里露个脸','请人喝杯东西'],
+    ji: ['当着 A 的面聊 B','在群里开别人玩笑','硬撑着参加不想去的局'],
+    fang: ['背后传话的人','只在你有用的时候找你的人','一句「我跟你讲个事你别生气」']
+  },
+  health: {
+    name:'健康', seal:'康', accent:'#86b38a',
+    poems: [
+      ['身是浮生一叶舟','莫教风浪打翻它','今日早睡一个钟','抵过十副良药汤'],
+      ['三餐不定肠胃怨','夜夜熬更肝火升','人年轻时不觉痛','痛起来才知当初'],
+      ['一杯温水慢慢咽','胜过冰饮灌三瓶','身体从不突然坏','都是一天天欠的'],
+      ['久坐腰酸肩也僵','起来走走莫嫌烦','两分钟的活动筋骨','能换一整天的舒坦'],
+      ['心宽一寸病先退','气顺半分身自轻','今日少想无用事','饭也香来觉也沉'],
+      ['体检报告慢慢看','看不懂的问医生','别拿搜索当大夫','它什么病都敢说']
+    ],
+    readings: [
+      '今天身体会给你一个小信号，可能是肩颈，可能是胃。听一下，别硬扛。',
+      '今天适合早睡半小时。这半小时，明天会连本带利还给你。',
+      '会有一顿饭吃得特别香。好好享受，那是身体和心情都对了。',
+      '今天容易因为一件小事上火。先喝口水，再决定要不要发那条消息。',
+      '会想躺平一整天。允许自己躺半天，剩下半天动一动。',
+      '今天走路的步数会意外地多。别嫌累，那是最好的药。'
+    ],
+    yi: ['早睡半小时','站起来走五分钟','喝够水','做一次拉伸'],
+    ji: ['重口味连吃两顿','用奶茶代替喝水','熬夜之后再去运动'],
+    fang: ['你自己说的那句「没事」','久坐之后的腰','体检报告上被跳过的那一页']
+  }
+};
+const ORDER = ['general','love','peach','career','study','wealth','social','health'];
+
+/* ---------- 签等 ---------- */
+const LEVELS = [
+  { key:'great', label:'上上', tag:'大吉', w:6 },
+  { key:'good',  label:'上',   tag:'吉',   w:22 },
+  { key:'mid',   label:'中',   tag:'平顺', w:40 },
+  { key:'flat',  label:'平',   tag:'守',   w:24 },
+  { key:'bad',   label:'下',   tag:'缓',   w:8 }
+];
+function pickLevel(rnd){
+  const total = LEVELS.reduce((s, l) => s + l.w, 0);
+  let r = rnd() * total;
+  for (const l of LEVELS){ if (r < l.w) return l; r -= l.w; }
+  return LEVELS[2];
+}
+
+/* ---------- 抽签核心 ---------- */
+const SALT = 'haoyunqian.v1';
+function drawSign(name, dateStr, typeKey){
+  const key = [name.trim().toLowerCase(), dateStr, typeKey, SALT].join('|');
+  const rnd = rngFor(key);
+  const T = TYPES[typeKey];
+  const level = pickLevel(rnd);
+  const poem = pick(T.poems, rnd);
+  const reading = pick(T.readings, rnd);
+  const yi = [pick(T.yi, rnd), ...pickN(YI_ALL, 2, rnd)];
+  const ji = [pick(T.ji, rnd), ...pickN(JI_ALL, 2, rnd)];
+  const fang = [pick(T.fang, rnd), ...pickN(FANG_ALL, 2, rnd)];
+  const item = pick(LUCKY_ITEMS, rnd);
+  const color = pick(LUCKY_COLORS, rnd);
+  const num = pick(LUCKY_NUMBERS, rnd);
+  const dir = pick(DIRECTIONS, rnd);
+  const bless = pick(BLESSINGS, rnd);
+  const heal = pick(HEAL, rnd);
+
+  const bucket = toneBucket();
+  const toneRnd = rngFor(key + '|tone|' + bucket);
+  const tone = pick(TONE[bucket], toneRnd);
+
+  return { name: name.trim(), dateStr, typeKey, T, level, poem, reading, yi, ji, fang,
+           item, color, num, dir, bless, heal, tone };
+}
+
+/* ---------- 日期 ---------- */
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function cnDate(s){
+  const p = s.split('-');
+  return `${p[0]} 年 ${Number(p[1])} 月 ${Number(p[2])} 日`;
+}
+
+/* ---------- 状态 ---------- */
+const state = { type: 'general', sound: true, last: null, healed: false };
+
+/* ---------- 音效 ---------- */
+let actx = null, shakeSource = null;
+function ensureAudio(){
+  if (!actx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    actx = new AC();
+  }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function startShakeSound(){
+  if (!state.sound) return;
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  try{
+    const len = Math.floor(ctx.sampleRate * 1.6);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < len; i++){
+      const p = i / len;
+      const trem = 0.45 + 0.55 * Math.abs(Math.sin(p * Math.PI * 22));
+      ch[i] = (Math.random() * 2 - 1) * trem * (1 - p * 0.55);
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 0.9;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 520;
+    const g = ctx.createGain();
+    g.gain.value = 0.16;
+    src.connect(bp).connect(hp).connect(g).connect(ctx.destination);
+    src.start();
+    shakeSource = src;
+  }catch(e){}
+}
+function stopShakeSound(){
+  if (shakeSource){ try{ shakeSource.stop(); }catch(e){} shakeSource = null; }
+}
+function chime(){
+  if (!state.sound) return;
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const notes = [523.25, 659.25, 783.99, 1046.5];
+  notes.forEach((f, i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    const t = ctx.currentTime + i * 0.085;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.14, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + 0.95);
+    o.connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + 1);
+  });
+}
+function vibrate(p){
+  if (navigator.vibrate){ try{ navigator.vibrate(p); }catch(e){} }
+}
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const screenGate = $('screenGate'), screenResult = $('screenResult');
+const nameInput = $('nameInput'), dateInput = $('dateInput');
+const chips = $('chips'), tubeWrap = $('tubeWrap'), tubeBtn = $('tubeBtn');
+const hint = $('hint'), progTrack = $('progTrack'), progFill = $('progFill');
+const sealChar = $('sealChar'), sealBand = $('sealBand');
+const toastEl = $('toast');
+
+let toastTimer = null;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('on'), 1800);
+}
+
+/* ---------- 渲染签种 ---------- */
+ORDER.forEach(k => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chip' + (k === 'general' ? ' on' : '');
+  b.dataset.key = k;
+  b.textContent = TYPES[k].name;
+  b.addEventListener('click', () => selectType(k));
+  chips.appendChild(b);
+});
+function selectType(k){
+  state.type = k;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.key === k));
+  const T = TYPES[k];
+  document.documentElement.style.setProperty('--accent', T.accent);
+  sealBand.setAttribute('fill', T.accent);
+  sealChar.textContent = T.seal;
+  hint.classList.remove('warn');
+  hint.textContent = `已选「${T.name}」签筒 · 按住摇一摇`;
+}
+
+/* ---------- 摇签交互 ---------- */
+let pressTimer = null, shaking = false, fired = false;
+const HOLD_MS = 1150;
+
+function setProgress(run){
+  if (run){
+    progTrack.classList.add('on');
+    progFill.classList.remove('run');
+    void progFill.offsetWidth;
+    progFill.classList.add('run');
+  } else {
+    progFill.classList.remove('run');
+    progTrack.classList.remove('on');
+  }
+}
+function beginShake(e){
+  if (e && e.cancelable) e.preventDefault();
+  if (shaking) return;
+
+  const name = nameInput.value.trim();
+  const date = dateInput.value;
+  if (!name){ shakeHint('先写下你的名字'); nameInput.focus(); return; }
+  if (!date){ shakeHint('把今天的日期填上'); dateInput.focus(); return; }
+
+  shaking = true; fired = false;
+  tubeWrap.classList.add('shaking');
+  setProgress(true);
+  startShakeSound();
+  vibrate([10, 40, 10]);
+
+  clearTimeout(pressTimer);
+  pressTimer = setTimeout(() => { if (shaking) fire(); }, HOLD_MS);
+}
+function endShake(){
+  if (!shaking || fired){
+    shaking = false;
+    tubeWrap.classList.remove('shaking');
+    return;
+  }
+  clearTimeout(pressTimer);
+  shaking = false;
+  tubeWrap.classList.remove('shaking');
+  setProgress(false);
+  stopShakeSound();
+  shakeHint('再多摇一会儿，签还没出来');
+}
+function shakeHint(msg){
+  hint.textContent = msg;
+  hint.classList.add('warn');
+  clearTimeout(shakeHint._t);
+  shakeHint._t = setTimeout(() => {
+    hint.classList.remove('warn');
+    hint.textContent = `已选「${TYPES[state.type].name}」签筒 · 按住摇一摇`;
+  }, 2000);
+}
+function fire(){
+  fired = true; shaking = false;
+  clearTimeout(pressTimer);
+  setProgress(false);
+  stopShakeSound();
+  tubeWrap.classList.remove('shaking');
+  tubeWrap.classList.add('ready');
+  vibrate([25, 45, 90]);
+  chime();
+
+  const flash = document.createElement('div');
+  flash.className = 'flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 520);
+
+  setTimeout(() => {
+    tubeWrap.classList.remove('ready');
+    const data = drawSign(nameInput.value, dateInput.value, state.type);
+    state.last = data;
+    state.healed = false;
+    try{ localStorage.setItem('haoyunqian.lastname', data.name); }catch(e){}
+    renderResult(data);
+    screenGate.classList.add('hidden');
+    screenResult.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (data.level.key === 'great') burstSparks();
+    saveRecord(data);
+  }, 260);
+}
+
+tubeBtn.addEventListener('pointerdown', beginShake);
+tubeBtn.addEventListener('pointerup', endShake);
+tubeBtn.addEventListener('pointercancel', endShake);
+tubeBtn.addEventListener('pointerleave', () => { if (shaking) endShake(); });
+tubeBtn.addEventListener('contextmenu', e => e.preventDefault());
+tubeBtn.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); beginShake(e); }
+});
+tubeBtn.addEventListener('keyup', e => {
+  if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); endShake(); }
+});
+
+/* ---------- 粒子 ---------- */
+function burstSparks(){
+  const rect = screenResult.getBoundingClientRect();
+  const cx = window.innerWidth / 2;
+  const cy = Math.max(120, rect.top + 160);
+  for (let i = 0; i < 28; i++){
+    const s = document.createElement('div');
+    s.className = 'spark';
+    const a = Math.random() * Math.PI * 2;
+    const d = 60 + Math.random() * 190;
+    s.style.left = cx + 'px';
+    s.style.top = cy + 'px';
+    s.style.setProperty('--tx', Math.cos(a) * d + 'px');
+    s.style.setProperty('--ty', Math.sin(a) * d + 'px');
+    s.style.animationDelay = (Math.random() * 0.16) + 's';
+    s.style.background = Math.random() > 0.5 ? '#f4dfa0' : '#e8b04b';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1400);
+  }
+}
+
+/* ---------- 结果卡 ---------- */
+function renderResult(d){
+  const T = d.T;
+  document.documentElement.style.setProperty('--accent', T.accent);
+
+  const yiHtml = d.yi.map(x => `<li>${esc(x)}</li>`).join('');
+  const jiHtml = d.ji.map(x => `<li>${esc(x)}</li>`).join('');
+  const fangHtml = d.fang.map(x => `<li>${esc(x)}</li>`).join('');
+  const poemHtml = d.poem.map(line => `<li>${esc(line)}</li>`).join('');
+  const isBad = d.level.key === 'bad';
+
+  $('resultWrap').innerHTML = `
+    <article class="card">
+      <div class="card-head">
+        <div class="who">
+          <b>${esc(d.name)}</b> 所求<br>
+          ${esc(cnDate(d.dateStr))}
+        </div>
+        <div class="seal">
+          <span class="lv">${esc(d.level.label)}</span>
+          <span class="tag">${esc(d.level.tag)}</span>
+        </div>
+      </div>
+
+      <div class="type-row">
+        <span class="type-name">${esc(T.name)}签</span>
+        <span class="line"></span>
+      </div>
+
+      <ul class="poem">${poemHtml}</ul>
+      <p class="tone-line">${esc(d.tone)}</p>
+
+      <div class="divider"></div>
+
+      <p class="reading">${esc(d.reading)}</p>
+
+      <div class="trio">
+        <div class="tri yi"><span class="tri-tag">宜</span><ul>${yiHtml}</ul></div>
+        <div class="tri ji"><span class="tri-tag">忌</span><ul>${jiHtml}</ul></div>
+        <div class="tri fang"><span class="tri-tag">防</span><ul>${fangHtml}</ul></div>
+      </div>
+
+      <div class="lucky">
+        <div class="lk"><span class="k">幸运物</span><span class="v">${esc(d.item)}</span></div>
+        <div class="lk"><span class="k">幸运色</span><span class="v">${esc(d.color)}</span></div>
+        <div class="lk"><span class="k">幸运数</span><span class="v">${esc(d.num)}</span></div>
+        <div class="lk"><span class="k">贵人方</span><span class="v">${esc(d.dir)}</span></div>
+      </div>
+
+      <p class="bless">${esc(d.bless)}</p>
+
+      <div id="healSlot"></div>
+
+      <div class="actions">
+        ${isBad ? '<button class="btn ghost-red" id="btnHeal" type="button">化 解</button>' : ''}
+        <button class="btn primary" id="btnShare" type="button">存成图片</button>
+        <button class="btn" id="btnBack" type="button">再求一支</button>
+      </div>
+    </article>
+    <p class="footnote">同名同日 · 同签同卦</p>
+  `;
+
+  const btnHeal = $('btnHeal');
+  if (btnHeal) btnHeal.addEventListener('click', doHeal);
+  $('btnShare').addEventListener('click', () => makeShareImage(d));
+  $('btnBack').addEventListener('click', backToGate);
+}
+
+function doHeal(){
+  if (state.healed) return;
+  state.healed = true;
+  const d = state.last;
+  $('healSlot').innerHTML = `
+    <div class="heal-box">
+      <div class="h">化 解 之 法</div>
+      <div class="t">${esc(d.heal)}</div>
+      <div class="heal-done">—— 此签已化解 ——</div>
+    </div>
+  `;
+  const btn = $('btnHeal');
+  if (btn) btn.remove();
+  chime();
+  toast('已化解，安心去过今天');
+  markHealed(d);
+}
+
+function backToGate(){
+  screenResult.classList.add('hidden');
+  screenGate.classList.remove('hidden');
+  state.healed = false;
+  hint.classList.remove('warn');
+  hint.textContent = `已选「${TYPES[state.type].name}」签筒 · 按住摇一摇`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- 存档 ---------- */
+const STORE_KEY = 'haoyunqian.records.v1';
+function loadRecords(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){ return []; }
+}
+function saveRecords(arr){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }catch(e){}
+}
+function saveRecord(d){
+  const arr = loadRecords();
+  const id = [d.name, d.dateStr, d.typeKey].join('|');
+  const idx = arr.findIndex(r => r.id === id);
+  const rec = { id, name: d.name, date: d.dateStr, type: d.typeKey, level: d.level.key, ts: Date.now() };
+  if (idx >= 0) arr[idx] = rec; else arr.push(rec);
+  saveRecords(arr);
+}
+function markHealed(d){
+  const arr = loadRecords();
+  const id = [d.name, d.dateStr, d.typeKey].join('|');
+  const rec = arr.find(r => r.id === id);
+  if (rec){ rec.healed = true; rec.level = 'healed'; saveRecords(arr); }
+}
+
+/* ---------- 运势日历 ---------- */
+function openCalendar(){
+  const arr = loadRecords();
+  const name = nameInput.value.trim();
+  const mine = name ? arr.filter(r => r.name === name) : arr;
+
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const first = new Date(y, m, 1);
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const startPad = (first.getDay() + 6) % 7;
+  const today = todayStr();
+
+  const rank = { great: 0, good: 1, mid: 2, flat: 3, bad: 4, healed: 5 };
+  const byDate = {};
+  mine.forEach(r => {
+    const prev = byDate[r.date];
+    if (!prev || rank[r.level] < rank[prev.level]) byDate[r.date] = r;
+  });
+
+  const dows = ['一','二','三','四','五','六','日'];
+  let cells = dows.map(x => `<div class="dw">${x}</div>`).join('');
+  for (let i = 0; i < startPad; i++) cells += '<div></div>';
+  for (let d = 1; d <= daysInMonth; d++){
+    const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const rec = byDate[ds];
+    const cls = ['day'];
+    if (ds === today) cls.push('today');
+    if (rec) cls.push('has', 'l-' + rec.level);
+    cells += `<div class="${cls.join(' ')}"><span>${d}</span><span class="dot"></span></div>`;
+  }
+
+  const dates = [...new Set(mine.filter(r => r.level !== 'healed').map(r => r.date))].sort().reverse();
+  let streak = 0;
+  if (dates.length){
+    const t = new Date(today + 'T00:00:00');
+    const c0 = new Date(dates[0] + 'T00:00:00');
+    if (Math.round((t - c0) / 86400000) <= 1){
+      streak = 1;
+      for (let i = 1; i < dates.length; i++){
+        const a = new Date(dates[i - 1] + 'T00:00:00');
+        const b = new Date(dates[i] + 'T00:00:00');
+        if (Math.round((a - b) / 86400000) === 1) streak++; else break;
+      }
+    }
+  }
+  const total = new Set(mine.map(r => r.date)).size;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">运势日历</div>
+        <button class="close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="n">${total}</div><div class="l">求签天数</div></div>
+        <div class="stat"><div class="n">${mine.length}</div><div class="l">累计签数</div></div>
+        <div class="stat"><div class="n">${streak}</div><div class="l">连续天数</div></div>
+      </div>
+      ${mine.length ? `<div class="cal">${cells}</div>` : '<div class="empty">这个月还空着。<br>抽第一支签，它会自己亮起来。</div>'}
+      <p class="cal-note">${name ? `仅显示「${esc(name)}」的签。` : '当前显示所有人的签。填写名字后可只看自己的。'}同名同日同签，颜色越亮，签越好。</p>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  modal.querySelector('.close').addEventListener('click', () => modal.remove());
+}
+
+/* ---------- 分享图 ---------- */
+function makeShareImage(d){
+  const W = 900, H = 1600;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const serif = '"Noto Serif SC","Songti SC","SimSun",serif';
+  const sans = '"PingFang SC","Microsoft YaHei",sans-serif';
+
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#17141d');
+  g.addColorStop(.55, '#100d15');
+  g.addColorStop(1, '#0a0810');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  const rg = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, 720);
+  rg.addColorStop(0, 'rgba(194,69,59,.22)');
+  rg.addColorStop(1, 'rgba(194,69,59,0)');
+  ctx.fillStyle = rg; ctx.fillRect(0, 0, W, 760);
+
+  ctx.strokeStyle = 'rgba(217,180,90,.55)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(38, 38, W - 76, H - 76);
+  ctx.strokeStyle = 'rgba(217,180,90,.16)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(52, 52, W - 104, H - 104);
+
+  let y = 174;
+
+  const tg = ctx.createLinearGradient(0, 90, 0, 190);
+  tg.addColorStop(0, '#fff6dd');
+  tg.addColorStop(.45, '#f4dfa0');
+  tg.addColorStop(1, '#a8843a');
+  ctx.fillStyle = tg;
+  ctx.font = `600 76px ${serif}`;
+  ctx.textAlign = 'center';
+  ctx.fillText(letterSpace('好运签'), W / 2, y);
+
+  ctx.fillStyle = 'rgba(154,146,133,.95)';
+  ctx.font = `300 25px ${sans}`;
+  ctx.fillText(`${d.name} · ${cnDate(d.dateStr)}`, W / 2, y + 58);
+
+  y = 324;
+
+  const sealSize = 132;
+  const sealX = W - 190, sealY = 108;
+  ctx.save();
+  ctx.translate(sealX + sealSize / 2, sealY + sealSize / 2);
+  ctx.rotate(-4 * Math.PI / 180);
+  const sgr = ctx.createLinearGradient(-sealSize / 2, -sealSize / 2, sealSize / 2, sealSize / 2);
+  sgr.addColorStop(0, '#c2453b'); sgr.addColorStop(1, '#8f3129');
+  ctx.fillStyle = sgr;
+  roundRect(ctx, -sealSize / 2, -sealSize / 2, sealSize, sealSize, 14);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,220,190,.45)'; ctx.lineWidth = 2;
+  roundRect(ctx, -sealSize / 2 + 6, -sealSize / 2 + 6, sealSize - 12, sealSize - 12, 10);
+  ctx.stroke();
+  ctx.fillStyle = '#ffeede';
+  ctx.font = `600 44px ${serif}`;
+  ctx.fillText(d.level.label, 0, 16);
+  ctx.font = `400 17px ${serif}`;
+  ctx.fillStyle = 'rgba(255,238,222,.7)';
+  ctx.fillText(d.level.tag, 0, 52);
+  ctx.restore();
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = d.T.accent;
+  ctx.font = `400 22px ${serif}`;
+  ctx.fillText(letterSpace(d.T.name + '签'), 90, y + 8);
+  ctx.fillStyle = 'rgba(217,180,90,.28)';
+  ctx.fillRect(260, y - 2, W - 180 - 170, 1);
+
+  y += 88;
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f0e8d6';
+  ctx.font = `400 46px ${serif}`;
+  d.poem.forEach(line => {
+    ctx.fillText(letterSpace(line), W / 2, y);
+    y += 74;
+  });
+
+  ctx.fillStyle = 'rgba(141,114,55,.95)';
+  ctx.font = `300 23px ${serif}`;
+  ctx.fillText(d.tone, W / 2, y + 4);
+  y += 58;
+
+  ctx.strokeStyle = 'rgba(217,180,90,.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(120, y); ctx.lineTo(W - 120, y); ctx.stroke();
+  y += 54;
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(194,69,59,.95)';
+  ctx.font = `600 20px ${serif}`;
+  ctx.fillText('签 解', 90, y);
+  y += 40;
+
+  ctx.fillStyle = '#cfc7b8';
+  ctx.font = `400 30px ${sans}`;
+  const rl = wrapText(ctx, d.reading, W - 190, 30);
+  rl.slice(0, 4).forEach(line => { ctx.fillText(line, 90, y); y += 52; });
+  y += 26;
+
+  const blocks = [
+    { tag: '宜', color: '#9fce93', items: d.yi },
+    { tag: '忌', color: '#e08a80', items: d.ji },
+    { tag: '防', color: '#d9b45a', items: d.fang }
+  ];
+  blocks.forEach(b => {
+    ctx.save();
+    ctx.globalAlpha = .14;
+    ctx.fillStyle = b.color;
+    roundRect(ctx, 90, y - 26, 48, 44, 8); ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle = b.color;
+    ctx.font = `600 24px ${serif}`;
+    ctx.fillText(b.tag, 103, y + 4);
+
+    ctx.fillStyle = '#c3bbae';
+    ctx.font = `400 25px ${sans}`;
+    const txt = b.items.join(' · ');
+    const lines = wrapText(ctx, txt, W - 180 - 70, 25);
+    let bx = 160;
+    lines.slice(0, 2).forEach((line, li) => {
+      ctx.fillText(line, bx, y + 4 + li * 36);
+    });
+    y += 62 + Math.max(0, lines.length - 1) * 34;
+  });
+
+  y += 16;
+
+  ctx.strokeStyle = 'rgba(217,180,90,.16)';
+  roundRect(ctx, 90, y - 30, W - 180, 104, 12); ctx.stroke();
+  ctx.fillStyle = 'rgba(141,114,55,1)';
+  ctx.font = `400 20px ${sans}`;
+  ctx.fillText(`幸运物 ${d.item}    幸运色 ${d.color}    幸运数 ${d.num}`, 118, y + 2);
+  ctx.fillStyle = '#b5ada0';
+  ctx.font = `400 20px ${sans}`;
+  ctx.fillText(`贵人方 ${d.dir}`, 118, y + 44);
+  y += 128;
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f4dfa0';
+  ctx.font = `400 30px ${serif}`;
+  ctx.fillText('「' + d.bless + '」', W / 2, Math.min(y + 18, H - 130));
+
+  ctx.fillStyle = 'rgba(70,63,54,.9)';
+  ctx.font = `300 19px ${sans}`;
+  ctx.fillText('好 运 签 · 同 名 同 日 同 签', W / 2, H - 66);
+
+  cv.toBlob(blob => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `好运签_${d.name}_${d.dateStr}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('签卡已保存，长按图片可分享');
+  }, 'image/png');
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function wrapText(ctx, text, maxWidth){
+  const out = [];
+  let line = '';
+  for (const ch of text){
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxWidth && line){
+      out.push(line); line = ch;
+    } else { line = test; }
+  }
+  if (line) out.push(line);
+  return out;
+}
+function letterSpace(str){
+  return str.split('').join('\u2009');
+}
+
+/* ---------- 顶部按钮 ---------- */
+$('btnCal').addEventListener('click', openCalendar);
+$('btnSound').addEventListener('click', () => {
+  state.sound = !state.sound;
+  $('btnSound').classList.toggle('muted', !state.sound);
+  if (!state.sound) stopShakeSound();
+  toast(state.sound ? '音效已开' : '音效已关');
+});
+
+/* ---------- 初始化 ---------- */
+dateInput.value = todayStr();
+nameInput.addEventListener('input', () => {
+  hint.classList.remove('warn');
+  hint.textContent = `已选「${TYPES[state.type].name}」签筒 · 按住摇一摇`;
+});
+try{
+  const last = localStorage.getItem('haoyunqian.lastname');
+  if (last) nameInput.value = last;
+}catch(e){}
+</script>
+</body>
+</html>
